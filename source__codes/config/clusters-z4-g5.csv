@@ -1,0 +1,12 @@
+# Tuned for the reported Ubuntu host:
+# Intel Xeon w5-2565X, 36 hardware threads, 62.44 GiB RAM.
+# Two logical nodes per cluster keeps the paper's heterogeneity while fitting the server budget.
+# cluster_id,node_id,cpu_threads,io_buffer_kb,memory_mb,cpu_set
+C1,c1-n1,6,4096,10240,0-5
+C1,c1-n2,6,4096,10240,6-11
+C2,c2-n1,5,3072,8192,12-16
+C2,c2-n2,5,3072,8192,17-21
+C3,c3-n1,4,2048,6144,22-25
+C3,c3-n2,4,2048,6144,26-29
+C4,c4-n1,3,1024,4096,30-32
+C4,c4-n2,3,1024,4096,33-35

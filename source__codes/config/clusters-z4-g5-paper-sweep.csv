@@ -1,0 +1,16 @@
+# Exact paper-style node capacities pinned onto the reported Ubuntu host.
+# 12 logical nodes across 4 homogeneous subclusters.
+# Total modeled CPU threads = 24, total modeled memory = 22.5 GiB.
+# cluster_id,node_id,cpu_threads,io_buffer_kb,memory_mb,cpu_set
+C1,c1-n1,4,2048,4096,0-3
+C1,c1-n2,4,2048,4096,4-7
+C1,c1-n3,4,2048,4096,8-11
+C2,c2-n1,2,1024,2048,12-13
+C2,c2-n2,2,1024,2048,14-15
+C2,c2-n3,2,1024,2048,16-17
+C3,c3-n1,1,512,1024,18
+C3,c3-n2,1,512,1024,19
+C3,c3-n3,1,512,1024,20
+C4,c4-n1,1,256,512,21
+C4,c4-n2,1,256,512,22
+C4,c4-n3,1,256,512,23

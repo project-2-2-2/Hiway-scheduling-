@@ -1,0 +1,32 @@
+# Dense 28-node host extension for overnight sweeps on the Z4 G5 server.
+# Four heterogeneous subclusters with seven nodes each.
+# Total modeled CPU threads = 35, leaving one host thread for OS and control-plane overhead.
+# cluster_id,node_id,cpu_threads,io_buffer_kb,memory_mb,cpu_set
+C1,c1-n1,2,3072,3072,0-1
+C1,c1-n2,2,3072,3072,2-3
+C1,c1-n3,2,3072,3072,4-5
+C1,c1-n4,2,3072,3072,6-7
+C1,c1-n5,2,3072,3072,8-9
+C1,c1-n6,2,3072,3072,10-11
+C1,c1-n7,2,3072,3072,12-13
+C2,c2-n1,1,2048,2048,14
+C2,c2-n2,1,2048,2048,15
+C2,c2-n3,1,2048,2048,16
+C2,c2-n4,1,2048,2048,17
+C2,c2-n5,1,2048,2048,18
+C2,c2-n6,1,2048,2048,19
+C2,c2-n7,1,2048,2048,20
+C3,c3-n1,1,1024,1536,21
+C3,c3-n2,1,1024,1536,22
+C3,c3-n3,1,1024,1536,23
+C3,c3-n4,1,1024,1536,24
+C3,c3-n5,1,1024,1536,25
+C3,c3-n6,1,1024,1536,26
+C3,c3-n7,1,1024,1536,27
+C4,c4-n1,1,512,1024,28
+C4,c4-n2,1,512,1024,29
+C4,c4-n3,1,512,1024,30
+C4,c4-n4,1,512,1024,31
+C4,c4-n5,1,512,1024,32
+C4,c4-n6,1,512,1024,33
+C4,c4-n7,1,512,1024,34
