@@ -1,0 +1,213 @@
+# WSH Workflow Scheduling Implementation
+
+This repository implements the scheduling study from `Main-Paper.pdf` in Java and extends it with:
+
+- communication-aware scheduling costs
+- `PSO` and `GA` metaheuristic schedulers
+- an `energy-aware` scheduler for greener placement decisions
+- execution through local, Docker, Hadoop, and `hdfs-docker` modes
+
+The project name is `wsh`, but the paper workflow ids stay unchanged:
+
+- `gene2life`
+- `avianflu_small`
+- `epigenomics`
+
+## What Is Implemented
+
+- `WSH` and `HEFT` scheduling on heterogeneous logical clusters
+- communication cost modeling in ranking and placement
+- predicted energy reporting per scheduled task and run
+- workflow-shaped dataset generation for all three paper workflows
+- Docker CPU pinning for logical worker nodes
+- Dockerized Hadoop and `HDFS` support
+- Markdown run reports with makespan, speedup, SLR, communication, and energy metrics
+
+## Canonical Entry Points
+
+Use these scripts as the supported interface:
+
+- `./scripts/build.sh`
+- `./scripts/run.sh`
+- `./scripts/run-workflows.sh`
+- `./scripts/build-image.sh`
+- `./scripts/build-hadoop-cluster-image.sh`
+- `./scripts/hadoop-docker-cluster.sh`
+- `./scripts/cleanup-project-runtime.sh`
+- `./scripts/validate-docker-node-pinning.sh`
+
+The build produces:
+
+- `target/wsh-app.jar`
+
+Primary runtime defaults:
+
+- application image: `wsh-java:latest`
+- Hadoop cluster image: `wsh-hadoop-cluster:3.4.3`
+- JVM tuning env var: `WSH_JAVA_OPTS`
+
+`GENE2LIFE_JAVA_OPTS` is still accepted as a fallback for compatibility, but new usage should prefer `WSH_JAVA_OPTS`.
+
+## Project Layout
+
+- `src/main/java/org/wsh/`
+  Java implementation and CLI
+- `src/test/java/org/wsh/`
+  unit tests
+- `config/`
+  cluster profiles
+- `docs/`
+  paper mapping and server guidance
+- `presentation/phase-2/`
+  final presentation source and PDF
+- `Main-Paper.pdf`
+  source paper
+- `work-transfer.tar.gz`
+  optional release asset containing generated run artifacts
+
+Generated runtime output under `work/` is intentionally not kept in the repo.
+
+## Prerequisites
+
+- Java 17+
+- Maven
+- Docker with Compose
+
+## Build
+
+Build the shaded jar and run the unit tests:
+
+```bash
+./scripts/build.sh
+```
+
+Build the Docker image used for worker execution:
+
+```bash
+./scripts/build-image.sh wsh-java:latest
+```
+
+Build the Docker Hadoop cluster image:
+
+```bash
+./scripts/build-hadoop-cluster-image.sh wsh-hadoop-cluster:3.4.3
+```
+
+## Hadoop Cluster Lifecycle
+
+Start the Docker Hadoop cluster:
+
+```bash
+./scripts/hadoop-docker-cluster.sh up \
+  ./config/clusters-z4-g5-paper-sweep.csv \
+  ./work/hadoop-docker-cluster \
+  wsh-hadoop-cluster:3.4.3
+```
+
+Validate the cluster:
+
+```bash
+./scripts/hadoop-docker-cluster.sh validate \
+  ./config/clusters-z4-g5-paper-sweep.csv \
+  ./work/hadoop-docker-cluster \
+  wsh-hadoop-cluster:3.4.3
+```
+
+Validate Docker CPU pinning without Hadoop:
+
+```bash
+./scripts/validate-docker-node-pinning.sh \
+  ./config/clusters-z4-g5-paper-sweep.csv \
+  wsh-java:latest
+```
+
+Shut everything down:
+
+```bash
+./scripts/run-workflows.sh cleanup
+```
+
+## Recommended Workflow Runner
+
+The primary multi-run entry point is:
+
+```bash
+./scripts/run-workflows.sh
+```
+
+Typical paper-style sweep:
+
+```bash
+./scripts/run-workflows.sh sweep \
+  --workflows gene2life,avianflu_small,epigenomics \
+  --nodes 4,7,10,13 \
+  --profile small \
+  --rounds 3 \
+  --schedulers wsh,heft,pso,ga,energy-aware
+```
+
+Quick preflight:
+
+```bash
+./scripts/run-workflows.sh preflight
+```
+
+## Low-Level CLI
+
+The lower-level CLI remains available through `scripts/run.sh`.
+
+Generate data for the `gene2life` workflow:
+
+```bash
+./scripts/run.sh generate-data \
+  --workflow gene2life \
+  --workspace ./work/final/gene2life \
+  --data-root ./work/final/gene2life/data \
+  --query-count 128 \
+  --reference-records-per-shard 100000 \
+  --sequence-length 240
+```
+
+Run a direct comparison:
+
+```bash
+HOST_IP="$(hostname -I | awk '{print $1}')"
+
+./scripts/run.sh compare \
+  --workflow gene2life \
+  --workspace ./work/final/gene2life \
+  --data-root ./work/final/gene2life/data \
+  --cluster-config ./config/clusters-z4-g5-paper-sweep.csv \
+  --max-nodes 4 \
+  --rounds 3 \
+  --training-warmup-runs 1 \
+  --training-measure-runs 3 \
+  --schedulers wsh,heft,pso,ga,energy-aware \
+  --executor hdfs-docker \
+  --docker-image wsh-java:latest \
+  --hadoop-conf-dir ./work/hadoop-docker-cluster/host-conf \
+  --hadoop-fs-default "hdfs://${HOST_IP}:19000" \
+  --hadoop-yarn-rm "${HOST_IP}:18032" \
+  --hadoop-framework-name yarn
+```
+
+Supported scheduler ids:
+
+- `wsh`
+- `heft`
+- `pso`
+- `ga`
+- `energy-aware`
+
+Supported executor ids:
+
+- `local`
+- `docker`
+- `hadoop`
+- `hdfs-docker`
+
+## Notes
+
+- `hdfs-docker` is the primary validated execution mode.
+- Communication and energy values are modeled scheduler inputs and outputs, not hardware-measured telemetry.
+- The repo reproduces the paper workflow structures and extends the scheduler set, but it is still a practical reimplementation rather than the original Hi-WAY codebase.
